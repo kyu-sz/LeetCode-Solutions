@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A81E5271-8059-4251-9AC2-A07CD0EA1641}</ProjectGuid>
+    <ProjectGuid>{57D1EEF1-7378-42EE-9719-A0FBFC09B9C1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>RomantoInteger</RootNamespace>
+    <RootNamespace>LongestCommonPrefix</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -142,15 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Roman to Integer.c" />
-    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="solution.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
