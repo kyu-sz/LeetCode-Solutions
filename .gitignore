@@ -286,3 +286,6 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 *.opendb
+*.db
+*.db
+Integer to Roman/Integer to Roman.VC.db
