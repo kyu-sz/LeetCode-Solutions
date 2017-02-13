@@ -19,25 +19,21 @@ typedef struct _arr_node {
 	int cnt;
 } ArrNode;
 
-inline TreeNode* leftSpin(TreeNode* node, int checkDepth) {
-	TreeNode* tmp = (node)->right;
-	(node)->right = tmp->left;
-	tmp->left = (node);
-	if (checkDepth) {
-		(node)->depth = max(getDepth((node)->left), getDepth((node)->right)) + 1;
-		tmp->depth = max(getDepth(tmp->left), getDepth(tmp->right)) + 1;
-	}
+inline TreeNode* leftSpin(TreeNode* node) {
+	TreeNode* tmp = node->right;
+	node->right = tmp->left;
+	tmp->left = node;
+	node->depth = max(getDepth(node->left), getDepth(node->right)) + 1;
+	tmp->depth = max(getDepth(tmp->left), getDepth(tmp->right)) + 1;
 	return tmp;
 }
 
-inline TreeNode* rightSpin(TreeNode* node, int checkDepth) {
-	TreeNode* tmp = (node)->left;
-	(node)->left = tmp->right;
-	tmp->right = (node);
-	if (checkDepth) {
-		(node)->depth = max(getDepth((node)->left), getDepth((node)->right)) + 1;
-		tmp->depth = max(getDepth(tmp->left), getDepth(tmp->right)) + 1;
-	}
+inline TreeNode* rightSpin(TreeNode* node) {
+	TreeNode* tmp = node->left;
+	node->left = tmp->right;
+	tmp->right = node;
+	node->depth = max(getDepth(node->left), getDepth(node->right)) + 1;
+	tmp->depth = max(getDepth(tmp->left), getDepth(tmp->right)) + 1;
 	return tmp;
 }
 
@@ -45,17 +41,17 @@ inline TreeNode* checkBalance(TreeNode* cur) {
 	int leftDepth = getDepth(cur->left);
 	int rightDepth = getDepth(cur->right);
 	if (leftDepth - rightDepth > 1) {
-		if (getDepth(cur->left->left) > getDepth(cur->left->right)) return rightSpin(cur, 1);
+		if (getDepth(cur->left->left) > getDepth(cur->left->right)) return rightSpin(cur);
 		else {
-			cur->left = leftSpin(cur->left, 0);
-			return rightSpin(cur, 1);
+			cur->left = leftSpin(cur->left);
+			return rightSpin(cur);
 		}
 	}
 	else if (rightDepth - leftDepth > 1) {
-		if (getDepth(cur->right->left) < getDepth(cur->right->right)) return leftSpin(cur, 1);
+		if (getDepth(cur->right->left) < getDepth(cur->right->right)) return leftSpin(cur);
 		else {
-			cur->right = rightSpin(cur->right, 0);
-			return leftSpin(cur, 1);
+			cur->right = rightSpin(cur->right);
+			return leftSpin(cur);
 		}
 	}
 	else {
@@ -132,10 +128,16 @@ inline int getCnt(TreeNode* cur, int x) {
 
 void traverse(TreeNode* cur, ArrNode** p) {
 	if (cur == NULL) return;
-	traverse(cur->left, p);
+
+	//assert(cur->depth == max(getDepth(cur->left), getDepth(cur->right)) + 1);
+	//assert(abs(getDepth(cur->left) - getDepth(cur->right)) <= 1);
+
+	if (cur->left) traverse(cur->left, p);
+
 	(*p)->value = cur->value;
 	(*p)++->cnt = cur->cnt;
-	traverse(cur->right, p);
+
+	if (cur->right) traverse(cur->right, p);
 }
 
 /**
@@ -156,7 +158,7 @@ int** threeSum(int* nums, int numsSize, int* returnSize) {
 		maxSize <<= 1;\
 	}
 
-	if (!numsSize) return res;
+	if (numsSize < 3) return res;
 
 	TreeNode* treeBuf = (TreeNode*)malloc(sizeof(TreeNode) * numsSize );
 	TreeNode* root = treeBuf;
