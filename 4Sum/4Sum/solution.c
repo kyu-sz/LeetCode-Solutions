@@ -5,148 +5,37 @@
 
 #define max(x,y) ((x) > (y) ? (x) : (y))
 
-typedef struct _tree_node {
-	int value;
-	int cnt;
-	struct _tree_node *left, *right;
-	int depth;
-} TreeNode;
-
-#define getDepth(node) ((node) ? (node)->depth : 0)
-
-typedef struct _arr_node {
-	int value;
-	int cnt;
-} ArrNode;
-
-inline TreeNode* leftSpin(TreeNode* node) {
-	TreeNode* tmp = node->right;
-	node->right = tmp->left;
-	tmp->left = node;
-	node->depth = max(getDepth(node->left), getDepth(node->right)) + 1;
-	tmp->depth = max(getDepth(tmp->left), getDepth(tmp->right)) + 1;
-	return tmp;
-}
-
-inline TreeNode* rightSpin(TreeNode* node) {
-	TreeNode* tmp = node->left;
-	node->left = tmp->right;
-	tmp->right = node;
-	node->depth = max(getDepth(node->left), getDepth(node->right)) + 1;
-	tmp->depth = max(getDepth(tmp->left), getDepth(tmp->right)) + 1;
-	return tmp;
-}
-
-inline TreeNode* checkBalance(TreeNode* cur) {
-	int leftDepth = getDepth(cur->left);
-	int rightDepth = getDepth(cur->right);
-	if (leftDepth - rightDepth > 1) {
-		if (getDepth(cur->left->left) > getDepth(cur->left->right)) return rightSpin(cur);
-		else {
-			cur->left = leftSpin(cur->left);
-			return rightSpin(cur);
+void my_qsort(int a[], int head, int tail) {
+	int i = head, j = tail, temp;
+	while (i < j) {
+		while (a[i] <= a[j] && i < j)
+			++i;
+		if (i < j) {
+			temp = a[i];
+			a[i] = a[j];
+			a[j] = temp;
+			--j;
+		}
+		while (a[i] <= a[j] && i < j)
+			--j;
+		if (i < j) {
+			temp = a[i];
+			a[i] = a[j];
+			a[j] = temp;
+			++i;
 		}
 	}
-	else if (rightDepth - leftDepth > 1) {
-		if (getDepth(cur->right->left) < getDepth(cur->right->right)) return leftSpin(cur);
-		else {
-			cur->right = rightSpin(cur->right);
-			return leftSpin(cur);
-		}
-	}
-	else {
-		cur->depth = max(leftDepth, rightDepth) + 1;
-		return cur;
-	}
-}
-
-TreeNode* add(TreeNode* cur, int x, TreeNode* treeBuf, int* pUniqueCnt) {
-	if (cur == NULL) {
-		cur = treeBuf + (*pUniqueCnt)++;
-		cur->value = x;
-		cur->cnt = 1;
-		cur->left = cur->right = NULL;
-		cur->depth = 1;
-		return cur;
-	}
-	else if (cur->value == x) {
-		++cur->cnt;
-		return NULL;
-	}
-	else if (cur->value >= x) {
-		if (cur->left) {
-			TreeNode* ret = add(cur->left, x, treeBuf, pUniqueCnt);
-			if (ret) {
-				cur->left = ret;
-				return checkBalance(cur);
-			}
-			else return NULL;
-		}
-		else {
-			cur->left = treeBuf + (*pUniqueCnt)++;
-			cur->left->value = x;
-			cur->left->cnt = 1;
-			cur->left->left = cur->left->right = NULL;
-			cur->left->depth = 1;
-			cur->depth = max(cur->depth, 2);
-			return cur;
-		}
-	}
-	else {
-		if (cur->right) {
-			TreeNode* ret = add(cur->right, x, treeBuf, pUniqueCnt);
-			if (ret) {
-				cur->right = ret;
-				return checkBalance(cur);
-			}
-			else return 0;
-		}
-		else {
-			cur->right = treeBuf + (*pUniqueCnt)++;
-			cur->right->value = x;
-			cur->right->cnt = 1;
-			cur->right->left = cur->right->right = NULL;
-			cur->right->depth = 1;
-			cur->depth = max(cur->depth, 2);
-			return cur;
-		}
-	}
-}
-
-inline int getCnt(TreeNode* cur, int x) {
-	if (cur == NULL) return 0;
-	while (cur->value != x) {
-		if (cur->value > x)
-			if (cur->left) cur = cur->left;
-			else return 0;
-		else
-			if (cur->right) cur = cur->right;
-			else return 0;
-	}
-	return cur->cnt;
-}
-
-void traverse(TreeNode* cur, ArrNode** p) {
-	if (cur == NULL) return;
-
-	//assert(cur->depth == max(getDepth(cur->left), getDepth(cur->right)) + 1);
-	//assert(abs(getDepth(cur->left) - getDepth(cur->right)) <= 1);
-
-	if (cur->left) traverse(cur->left, p);
-
-	(*p)->value = cur->value;
-	(*p)++->cnt = cur->cnt;
-
-	if (cur->right) traverse(cur->right, p);
+	if (head < i - 1) my_qsort(a, head, i - 1);
+	if (j + 1 < tail) my_qsort(a, j + 1, tail);
 }
 
 /**
 * Return an array of arrays of size *returnSize.
 * Note: The returned array must be malloced, assume caller calls free().
 */
-int** fourSum(int* nums, int numsSize, int oriTarget, int* returnSize) {
+int** fourSum(int* nums, int numsSize, int target, int* returnSize) {
 	// Result buffer.
-	int maxSize = max(numsSize, 1000);
+	int maxSize = max(numsSize, 100000);
 	int** res = (int**)malloc(maxSize * sizeof(int*));
 	*returnSize = 0;
 #define checkBuf \
@@ -160,129 +49,58 @@ int** fourSum(int* nums, int numsSize, int oriTarget, int* returnSize) {
 
 	if (numsSize < 4) return res;
 
-	TreeNode* treeBuf = (TreeNode*)malloc(sizeof(TreeNode) * numsSize);
-	TreeNode* root = treeBuf;
-	root->value = nums[0];
-	root->cnt = 1;
-	root->left = root->right = NULL;
-	root->depth = 1;
-	int uniqueCnt = 1;
-	for (int i = 1; i < numsSize; ++i) {
-		TreeNode* ret = add(root, nums[i], treeBuf, &uniqueCnt);
-		if (ret) root = ret;
-	}
+	my_qsort(nums, 0, numsSize - 1);
 
-	ArrNode* arr = (ArrNode*)malloc(uniqueCnt * sizeof(ArrNode));
-	ArrNode* p = arr;
-	traverse(root, &p);
-
-	for (int i = 0; i < uniqueCnt && (arr[i].value << 2) <= oriTarget; ++i) {
-		// a a a b
-		if (arr[i].cnt >= 3) {
-			int target = oriTarget - arr[i].value * 3;
-			if (target == arr[i].value) {
-				if (arr[i].cnt >= 4) {
-					res[*returnSize] = (int *)malloc(4 * sizeof(int));
-					res[*returnSize][0] = res[*returnSize][1] = res[*returnSize][2] = res[(*returnSize)++][3] = target;
-				}
-				break;
-			}
-			else if (getCnt(root, target)) {
-				res[*returnSize] = (int *)malloc(4 * sizeof(int));
-				res[*returnSize][0] = res[*returnSize][1] = res[*returnSize][2] = arr[i].value;
-				res[(*returnSize)++][3] = target;
-				checkBuf;
-			}
-		}
-
-		// a a
-		if (arr[i].cnt >= 2) {
-			int secondTarget = oriTarget - arr[i].value * 2;
-			for (int j = i + 1; j < uniqueCnt; ++j) {
-				int target = secondTarget - arr[j].value;
-				if (target < arr[j].value) break;
-				// a a b b
-				else if (target == arr[j].value) {
-					if (arr[j].cnt >= 2) {
-						res[*returnSize] = (int *)malloc(4 * sizeof(int));
-						res[*returnSize][0] = res[*returnSize][1] = arr[i].value;
-						res[*returnSize][2] = res[(*returnSize)++][3] = target;
-						checkBuf;
-					}
-					break;
-				}
-				// a a b c
-				else if (getCnt(root, target)) {
-					res[*returnSize] = (int *)malloc(4 * sizeof(int));
-					res[*returnSize][0] = res[*returnSize][1] = arr[i].value;
-					res[*returnSize][2] = arr[j].value;
-					res[(*returnSize)++][3] = target;
-					checkBuf;
-				}
-			}
-		}
-
-		int secondTarget = oriTarget - arr[i].value;
-		for (int j = i + 1; j < uniqueCnt && arr[j].value * 3 <= secondTarget; ++j) {
-			// a b b
-			if (arr[j].cnt >= 2) {
-				int target = secondTarget - (arr[j].value << 1);
-				if (target == arr[j].value) {
-					// a b b b
-					if (arr[j].cnt >= 3) {
-						res[*returnSize] = (int *)malloc(4 * sizeof(int));
-						res[*returnSize][0] = arr[i].value;
-						res[*returnSize][1] = res[*returnSize][2] = res[(*returnSize)++][3] = target;
-						checkBuf;
-					}
-					break;
-				}
+	int last2Sum = nums[numsSize - 1] + nums[numsSize - 2];
+	int last3Sum = last2Sum + nums[numsSize - 3];
+	for (int i = 0; i < numsSize - 3; ++i) {
+		if ((i > 0 && nums[i - 1] == nums[i]) || nums[i] + last3Sum < target) continue;
+		if (nums[i] + nums[i + 1] + nums[i + 2] + nums[i + 3] > target) break;
+		for (int i1 = i + 1; i1 < numsSize - 2; ++i1) {
+			if ((i1 > i + 1 && nums[i1] == nums[i1 - 1]) || nums[i] + nums[i1] + last2Sum < target) continue;
+			if (nums[i] + nums[i1] + nums[i1 + 1] + nums[i1 + 2] > target) break;
+			int j = i1 + 1, k = numsSize - 1;
+			while (j < k) {
+				int sum = nums[i] + nums[i1] + nums[j] + nums[k];
+				if (sum > target)
+					do {
+						--k;
+					} while (j < k && nums[k] == nums[k + 1]);
+				else if (sum < target)
+					do {
+						++j;
+					} while (j < k && nums[j] == nums[j - 1]);
 				else {
-					// a b b c
-					if (getCnt(root, target)) {
-						res[*returnSize] = (int *)malloc(4 * sizeof(int));
-						res[*returnSize][0] = arr[i].value;
-						res[*returnSize][1] = res[*returnSize][2] = arr[j].value;
-						res[(*returnSize)++][3] = target;
-						checkBuf;
-					}
-				}
-			}
-
-			int thirdTarget = secondTarget - arr[j].value;
-			for (int k = j + 1; k < uniqueCnt; ++k) {
-				int target = thirdTarget - arr[k].value;
-				if (target < arr[k].value) break;
-				// a b c c
-				else if (target == arr[k].value) {
-					if (arr[k].cnt >= 2) {
-						res[*returnSize] = (int *)malloc(4 * sizeof(int));
-						res[*returnSize][0] = arr[i].value;
-						res[*returnSize][1] = arr[j].value;
-						res[*returnSize][2] = res[(*returnSize)++][3] = target;
-						checkBuf;
-					}
-					break;
-				}
-				// a b c d
-				else if (getCnt(root, target)) {
-					res[*returnSize] = (int *)malloc(4 * sizeof(int));
-					res[*returnSize][0] = arr[i].value;
-					res[*returnSize][1] = arr[j].value;
-					res[*returnSize][2] = arr[k].value;
-					res[(*returnSize)++][3] = target;
+					res[*returnSize] = (int*)malloc(sizeof(int) * 3);
+					res[*returnSize][0] = nums[i];
+					res[*returnSize][1] = nums[i1];
+					res[*returnSize][2] = nums[j];
+					res[(*returnSize)++][3] = nums[k];
 					checkBuf;
+					do {
+						++j;
+					} while (j < k && nums[j] == nums[j - 1]);
 				}
 			}
 		}
 	}
 
-	free(treeBuf);
-	free(arr);
 	return res;
 }
 
 int main() {
+	{
+		int nums[] = { 0, 0, 0, 0 };
+		int retSize;
+		int** res = fourSum(nums, sizeof(nums) / sizeof(int), 1, &retSize);
+		for (int i = 0; i < retSize; ++i) {
+			printf("%d %d %d %d\n", res[i][0], res[i][1], res[i][2], res[i][3]);
+			free(res[i]);
+		}
+		puts("");
+		free(res);
+	}
+
 	{
 		int nums[] = { -1, 0, 1, 2, -1, -4 };
 		int retSize;

@@ -1,0 +1,18 @@
+﻿Finish Q18: 4Sum. Need optimization.
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Date:      Mon Feb 13 22:19:27 2017 +0800
+#
+# On branch master
+# Your branch is ahead of 'origin/master' by 1 commit.
+#   (use "git push" to publish your local commits)
+#
+# Changes to be committed:
+#	modified:   3Sum/3Sum/solution.c
+#	modified:   4Sum/4Sum/4Sum.vcxproj
+#	modified:   4Sum/4Sum/4Sum.vcxproj.filters
+#	modified:   4Sum/4Sum/solution.c
+#
+

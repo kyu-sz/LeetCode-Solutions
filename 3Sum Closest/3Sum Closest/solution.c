@@ -1,7 +1,15 @@
+// 3Sum Closest.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <omp.h>
+#include <math.h>
+
+#define max(x,y) ((x) > (y) ? (x) : (y))
+#define min(x,y) ((x) < (y) ? (x) : (y))
 
 void my_qsort(int a[], int head, int tail) {
 	int i = head, j = tail, temp;
@@ -31,53 +39,39 @@ void my_qsort(int a[], int head, int tail) {
  * Return an array of arrays of size *returnSize.
  * Note: The returned array must be malloced, assume caller calls free().
  */
-int** threeSum(int* nums, int numsSize, int* returnSize) {
-	// Result buffer.
-	int maxSize = numsSize > 1000 ? numsSize : 1000;
-	int** res = (int**)malloc(maxSize * sizeof(int*));
-	*returnSize = 0;
-#define checkBuf \
-	if (*returnSize >= maxSize) {\
-		int** tmp = res;\
-		res = (int**)malloc((maxSize << 1) * sizeof(int*));\
-		memcpy(res, tmp, maxSize * sizeof(int*));\
-		free(tmp);\
-		maxSize <<= 1;\
-	}
+int threeSumClosest(int* nums, int numsSize, int target) {
+	int result = 0x7fffffff, bestResidual = 0x7fffffff;
 
-	if (numsSize < 3) return res;
+	if (numsSize <= 3) {
+		result = 0;
+		for (int i = 0; i < numsSize; ++i) result += nums[i];
+		return result;
+	}
 
 	my_qsort(nums, 0, numsSize - 1);
 
-	int last2Sum = nums[numsSize - 2] + nums[numsSize - 1];
 	for (int i = 0; i < numsSize - 2; ++i) {
-		if ((i > 0 && nums[i] == nums[i - 1]) || nums[i] + last2Sum < 0) continue;
-		if (nums[i] + nums[i + 1] + nums[i + 2] > 0) break;
 		int j = i + 1, k = numsSize - 1;
 		while (j < k) {
 			int sum = nums[i] + nums[j] + nums[k];
-			if (sum > 0)
-				do {
-					--k;
-				} while (j < k && nums[k] == nums[k + 1]);
-			else if (sum < 0)
-				do {
-					++j;
-				} while (j < k && nums[j] == nums[j - 1]);
-			else {
-				res[*returnSize] = (int*)malloc(sizeof(int) * 3);
-				res[*returnSize][0] = nums[i];
-				res[*returnSize][1] = nums[j];
-				res[(*returnSize)++][2] = nums[k];
-				do {
-					++j;
-				} while (j < k && nums[j] == nums[j - 1]);
-				checkBuf;
+			if (sum > target) {
+				if (sum - target < bestResidual) {
+					bestResidual = sum - target;
+					result = sum;
+				}
+				--k;
 			}
+			else if (sum < target) {
+				if (target - sum < bestResidual) {
+					bestResidual = target - sum;
+					result = sum;
+				}
+				++j;
+			}
+			else return target;
 		}
 	}
-
-	return res;
+	return result;
 }
 
 int main() {
@@ -86,63 +80,52 @@ int main() {
 		int retSize;
 		double start, end;
 		start = omp_get_wtime();
-		int** res = threeSum(nums, sizeof(nums) / sizeof(int), &retSize);
+		int res = threeSumClosest(nums, sizeof(nums) / sizeof(int), 0);
 		end = omp_get_wtime();
 		printf("Cost %lfms\n", end - start);
-		//for (int i = 0; i < retSize; ++i) {
-		//	printf("%d %d %d\n", res[i][0], res[i][1], res[i][2]);
-		//	free(res[i]);
-		//}
-		//puts("");
-		free(res);
+		assert(res == 0);
 	}
 
 	{
 		int nums[] = { -1, 0, 1, 2, -1, -4 };
 		int retSize;
-		int** res = threeSum(nums, sizeof(nums) / sizeof(int), &retSize);
-		for (int i = 0; i < retSize; ++i) {
-			printf("%d %d %d\n", res[i][0], res[i][1], res[i][2]);
-			free(res[i]);
-		}
-		puts("");
-		free(res);
+		int res = threeSumClosest(nums, sizeof(nums) / sizeof(int), 1);
+		assert(res == 1);
 	}
 
 	{
 		int nums[] = { 3, 0, -2, -1, 1, 2 };
 		int retSize;
-		int** res = threeSum(nums, sizeof(nums) / sizeof(int), &retSize);
-		for (int i = 0; i < retSize; ++i) {
-			printf("%d %d %d\n", res[i][0], res[i][1], res[i][2]);
-			free(res[i]);
-		}
-		puts("");
-		free(res);
+		int res = threeSumClosest(nums, sizeof(nums) / sizeof(int), -1);
+		assert(res == -1);
 	}
 
 	{
 		int nums[] = { -1, 1, 0 };
 		int retSize;
-		int** res = threeSum(nums, sizeof(nums) / sizeof(int), &retSize);
-		for (int i = 0; i < retSize; ++i) {
-			printf("%d %d %d\n", res[i][0], res[i][1], res[i][2]);
-			free(res[i]);
-		}
-		puts("");
-		free(res);
+		int res = threeSumClosest(nums, sizeof(nums) / sizeof(int), 1);
+		assert(res == 0);
 	}
 
 	{
 		int nums[] = { 0, 0, 0 };
 		int retSize;
-		int** res = threeSum(nums, sizeof(nums) / sizeof(int), &retSize);
-		for (int i = 0; i < retSize; ++i) {
-			printf("%d %d %d\n", res[i][0], res[i][1], res[i][2]);
-			free(res[i]);
-		}
-		puts("");
-		free(res);
+		int res = threeSumClosest(nums, sizeof(nums) / sizeof(int), -1);
+		assert(res == 0);
+	}
+
+	{
+		int nums[] = { 0, 1, 2 };
+		int retSize;
+		int res = threeSumClosest(nums, sizeof(nums) / sizeof(int), 0);
+		assert(res == 3);
+	}
+
+	{
+		int nums[] = { 1, 1, 1, 1 };
+		int retSize;
+		int res = threeSumClosest(nums, sizeof(nums) / sizeof(int), 0);
+		assert(res == 3);
 	}
 
 	return 0;
