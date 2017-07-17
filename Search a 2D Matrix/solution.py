@@ -13,26 +13,13 @@ class Solution(object):
             return False
 
         left = 0
-        right = m - 1
+        right = m * n - 1
         while left < right:
             mid = (left + right + 1) >> 1
-            if matrix[mid][0] > target:
+            if matrix[mid / n][mid % n] > target:
                 right = mid - 1
-            elif matrix[mid][0] < target:
+            elif matrix[mid / n][mid % n] < target:
                 left = mid
             else:
                 return True
-        if matrix[left][0] == target:
-            return True
-        line = left
-        left = 0
-        right = n - 1
-        while left < right:
-            mid = (left + right + 1) >> 1
-            if matrix[line][mid] > target:
-                right = mid - 1
-            elif matrix[line][mid] < target:
-                left = mid
-            else:
-                return True
-        return matrix[line][left] == target
+        return matrix[left / n][left % n] == target
