@@ -3,6 +3,7 @@
 
 # IDEA settings
 **/.idea
+**/*.iml
 
 # Eclipse settings
 .metadata
@@ -30,6 +31,7 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+**/*.class
 
 # Visual Studio 2015 cache/options directory
 .vs/
