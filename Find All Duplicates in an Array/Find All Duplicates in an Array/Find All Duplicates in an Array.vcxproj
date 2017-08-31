@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{3B9B94DA-119C-46AB-B015-0A1BEACECB2D}</ProjectGuid>
+    <ProjectGuid>{494520DB-85B6-4965-96B7-36CE7B7964B2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>BalancedBinaryTree</RootNamespace>
+    <RootNamespace>FindAllDuplicatesinanArray</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
