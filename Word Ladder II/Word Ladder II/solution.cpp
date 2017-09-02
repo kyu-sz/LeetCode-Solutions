@@ -2,7 +2,6 @@
 #include <iostream>
 #include <climits>
 #include <string>
-#include <unordered_map>
 
 using namespace std;
 
@@ -13,27 +12,55 @@ class Solution {
 		bool is_from_begin_;
 		int depth_;
 		int index_in_word_list_;
-		Case(const string* word, bool is_from_begin, int depth, int index_in_word_list, const Case* prev = nullptr) :
+		Case(const string* word, bool is_from_begin, int depth, int index_in_word_list) :
+			word_(word), is_from_begin_(is_from_begin), depth_(depth), index_in_word_list_(index_in_word_list)
+		{}
+		Case(const string* word, bool is_from_begin, int depth, int index_in_word_list, const Case* prev) :
 			word_(word), is_from_begin_(is_from_begin), depth_(depth), index_in_word_list_(index_in_word_list)
 		{
-			if (prev) prev_.push_back(prev);
+			prev_.push_back(prev);
 		}
 	};
 
-	inline bool isTransform(string a, string b) {
-		bool found_diff = false;
-		int len = a.length();
-		for (int i = 0; i < len; ++i)
-			if (a[i] != b[i])
-				if (found_diff)
-					return false;
-				else
-					found_diff = true;
-		return found_diff;
-	}
+	class Dictionary {
+		struct DictNode {
+			char c;
+			DictNode* next[26] = {};
+			int index;
+		};
+		DictNode* root;
+		int used = 1;
+	public:
+		Dictionary(int max_len, int max_num_words) {
+			root = new DictNode[max_len * max_num_words + 1];
+		}
+
+		~Dictionary() { delete[] root; }
+
+		void add(const string& s, int index) {
+			DictNode* node = root;
+			for (auto c : s) {
+				if (!node->next[c - 'a']) {
+					node->next[c - 'a'] = root + used++;
+					node->next[c - 'a']->c = c;
+				}
+				node = node->next[c - 'a'];
+			}
+			node->index = index;
+		}
+
+		int find(const string& s) const {
+			DictNode* node = root;
+			for (auto c : s) {
+				if (!node->next[c - 'a'])
+					return -1;
+				node = node->next[c - 'a'];
+			}
+			return node->index;
+		}
+	};
 
 	void track(const Case* c, vector<const string*>& rec, vector<vector<const string*>>& store) {
-		bool divided = false;
 		rec.push_back(c->word_);
 		if (c->prev_.size())
 			for (auto p : c->prev_)
@@ -52,14 +79,14 @@ public:
 		int num_words = wordList.size();
 
 		// Precompute transformation relations.
-		unordered_map<string, int> word_set;
+		Dictionary word_set(word_len, num_words);
 		for (int i = 0; i < num_words; ++i)
-			word_set[wordList[i]] = i;
+			word_set.add(wordList[i], i);
 
 		// First check if endWord is in wordList.
-		if (!word_set.count(endWord))
+		int end_word_loc = word_set.find(endWord);
+		if (end_word_loc < 0)
 			return ans;
-		int end_word_loc = word_set[endWord];
 
 		// Two-end BFS.
 		vector<Case> from_begin, from_end;
@@ -88,9 +115,8 @@ public:
 					for (char c = 'a'; c <= 'z'; ++c)
 						if (c != word[j]) {
 							new_word[j] = c;
-							auto it = word_set.find(new_word);
-							if (it != word_set.end()) {
-								int new_index = it->second;
+							int new_index = word_set.find(new_word);
+							if (new_index >= 0) {
 								if (!usage[new_index]) {
 									// Unused.
 									from_begin.push_back(Case(&wordList[new_index], true, cur.depth_ + 1, new_index, &cur));
@@ -124,9 +150,8 @@ public:
 					for (char c = 'a'; c <= 'z'; ++c)
 						if (c != word[j]) {
 							new_word[j] = c;
-							auto it = word_set.find(new_word);
-							if (it != word_set.end()) {
-								int new_index = it->second;
+							int new_index = word_set.find(new_word);
+							if (new_index >= 0) {
 								if (!usage[new_index]) {
 									// Unused.
 									from_end.push_back(Case(&wordList[new_index], false, cur.depth_ + 1, new_index, &cur));
